@@ -84,13 +84,14 @@ function verifyToken<T extends { sub: string }>({
 
 function getAuthFromCookies(
   pems: AWSCognitoPublicPem[],
+  userPoolClientId: string,
   cookie?: string
 ): AuthTokens {
   if (!cookie) return null;
 
   const { idToken, accessToken } = getCognitoCookieInfo(
     cookie,
-    process.env.USER_POOL_CLIENT_ID!
+    userPoolClientId
   );
 
   if (!idToken || !accessToken) return null;
@@ -98,12 +99,12 @@ function getAuthFromCookies(
   const idTokenData = verifyToken<IdTokenData>({
     pems,
     token: idToken,
-    validate: (data) => data.aud === process.env.USER_POOL_CLIENT_ID!,
+    validate: (data) => data.aud === userPoolClientId,
   });
   const accessTokenData = verifyToken<AccessTokenData>({
     pems,
     token: accessToken,
-    validate: (data) => data.client_id === process.env.USER_POOL_CLIENT_ID!,
+    validate: (data) => data.client_id === userPoolClientId,
   });
 
   if (!idTokenData || !accessTokenData) return null;
@@ -111,16 +112,20 @@ function getAuthFromCookies(
   return { accessTokenData, idTokenData, idToken, accessToken };
 }
 
-export function createGetServerSideAuth(pems: AWSCognitoPublicPem[]) {
+export function createGetServerSideAuth({
+  pems,
+  userPoolClientId,
+}: {
+  pems: AWSCognitoPublicPem[];
+  userPoolClientId: string;
+}) {
   return function getServerSideAuth(req: IncomingMessage): AuthTokens {
-    return getAuthFromCookies(pems, req.headers.cookie);
+    return getAuthFromCookies(pems, userPoolClientId, req.headers.cookie);
   };
 }
 
-// auto-login in case loginsub cookie has been added
-// TODO instead, autologin when LastUser exists, and an idToken for LastUser
-// exists?
-function useAutoLogin(auth: AuthTokens) {
+// auto-login in case auth cookies have been added
+function useAutoLogin(auth: AuthTokens, userPoolClientId: string) {
   // check on window activation
   React.useEffect(() => {
     // use localStorage to sync auth state across tabs
@@ -131,14 +136,9 @@ function useAutoLogin(auth: AuthTokens) {
       // clear localStorage item since we only needed it to sync across tabs
       localStorage.removeItem(AUTH_SYNC_KEY);
 
-      console.log(
-        "triggering recheck from storageListener because of",
-        event.newValue
-      );
-
       const { idToken } = getCognitoCookieInfo(
         document.cookie,
-        process.env.USER_POOL_CLIENT_ID!
+        userPoolClientId
       );
 
       // login when user was not signed in before, or when the idToken changed
@@ -160,7 +160,7 @@ function useAutoLogin(auth: AuthTokens) {
   }, [auth]);
 }
 
-function useAutoLogout(auth: AuthTokens) {
+function useAutoLogout(auth: AuthTokens, userPoolClientId: string) {
   const isAuthenticated = Boolean(auth);
 
   // auto-logout in case loginsub cookie has been removed
@@ -168,7 +168,7 @@ function useAutoLogout(auth: AuthTokens) {
     const listener = () => {
       const { idToken } = getCognitoCookieInfo(
         document.cookie,
-        process.env.USER_POOL_CLIENT_ID!
+        userPoolClientId
       );
 
       // User signed out locally, but server-side props still contain cookies.
@@ -182,7 +182,6 @@ function useAutoLogout(auth: AuthTokens) {
         if (idToken) {
           // user signed out through another another application, so sign
           // user out completely to remove all auth cookies
-          console.log("signing out by deleting loginsub cookie");
           const redirectAfterSignOut = window.location.href;
           // Reconfigure oauth to add the uri of the page which should open
           // after the sign out
@@ -194,7 +193,6 @@ function useAutoLogout(auth: AuthTokens) {
         } else {
           // user signed out through another tab, so reload to
           // refresh server-side props
-          console.log("signing out by removing all auth cookies");
           window.location.reload();
         }
       }
@@ -211,7 +209,7 @@ function useAutoLogout(auth: AuthTokens) {
 }
 
 type LoginFunction = (redirectAfterSignIn?: string) => void;
-type LogoutFunction = () => void;
+type LogoutFunction = (redirectAfterSignOut?: string) => void;
 
 // TODO sync this across multiple invocations?
 // If you are using server-side rendering, pass "initialAuth" to this hook.
@@ -219,12 +217,18 @@ type LogoutFunction = () => void;
 //
 // This hook is expected to be only called once per page at the moment.
 // Pass the auth-state down to components using props if they need it.
-export function createUseAuth(pems: AWSCognitoPublicPem[]) {
+export function createUseAuth({
+  pems,
+  userPoolClientId,
+}: {
+  pems: AWSCognitoPublicPem[];
+  userPoolClientId: string;
+}) {
   return function useAuth(initialAuth: AuthTokens): AuthTokens {
     const [auth, setAuth] = React.useState<AuthTokens>(initialAuth);
 
-    useAutoLogin(auth);
-    useAutoLogout(auth);
+    useAutoLogin(auth, userPoolClientId);
+    useAutoLogout(auth, userPoolClientId);
 
     React.useEffect(() => {
       // When there is a cookie, this takes ~100ms since it's verifying the cookie
@@ -235,7 +239,11 @@ export function createUseAuth(pems: AWSCognitoPublicPem[]) {
       //
       // Note that getAuthFromCookies also runs on the server, so improvements
       // can not have caching-problems.
-      const cookieAuth = getAuthFromCookies(pems, document.cookie);
+      const cookieAuth = getAuthFromCookies(
+        pems,
+        userPoolClientId,
+        document.cookie
+      );
       setAuth(cookieAuth);
     }, []);
 
@@ -247,17 +255,27 @@ export function useAuthFunctions() {
   const login: LoginFunction = React.useCallback((redirectAfterSignInUrl) => {
     const defaultRedirectUrl =
       window.location.pathname + window.location.search + window.location.hash;
-    const config = Auth.configure(null);
     const redirectAfterSignIn = redirectAfterSignInUrl || defaultRedirectUrl;
+
+    const config = Auth.configure(null);
     Auth.configure({ oauth: { ...config.oauth, redirectAfterSignIn } });
     Auth.federatedSignIn();
   }, []);
 
-  const logout: LogoutFunction = React.useCallback(() => {
-    Auth.signOut().then(() => {
-      localStorage.setItem(AUTH_SYNC_KEY, "logout");
-    });
-  }, []);
+  const logout: LogoutFunction = React.useCallback(
+    (redirectAfterSignOutUrl) => {
+      const defaultRedirectUrl = window.location.href;
+      const redirectAfterSignOut =
+        redirectAfterSignOutUrl || defaultRedirectUrl;
+
+      const config = Auth.configure(null);
+      Auth.configure({ oauth: { ...config.oauth, redirectAfterSignOut } });
+      Auth.signOut().then(() => {
+        localStorage.setItem(AUTH_SYNC_KEY, "logout");
+      });
+    },
+    []
+  );
 
   return { login, logout };
 }

@@ -113,9 +113,14 @@ Create a file called `_auth.tsx` inside your `pages` folder, and fill it with th
 import { createGetServerSideAuth, createUseAuth } from "aws-cognito-next";
 import pems from "../pems.json";
 
-// bind functions to pems
-export const getServerSideAuth = createGetServerSideAuth(pems);
-export const useAuth = createUseAuth(pems);
+const config = {
+  pems,
+  userPoolClientId: process.env.USER_POOL_CLIENT_ID,
+};
+
+// create functions by passing config
+export const getServerSideAuth = createGetServerSideAuth(config);
+export const useAuth = createUseAuth(config);
 
 // reexport functions from aws-cognito-next
 export * from "aws-cognito-next";
@@ -150,6 +155,7 @@ export default function TokenSetter() {
   const router = useRouter();
   return (
     <Token
+      userPoolClientId={process.env.USER_POOL_CLIENT_ID}
       onToken={() => {
         // We are not using the router here, since the query object will be empty
         // during prerendering if the page is statically optimized.
@@ -169,9 +175,11 @@ export default function TokenSetter() {
 
 ## Usage
 
+### `useAuth`
+
 The auth can be used in two different ways. Either you want to prepare the user information on the server and leverage server-side rendering, or you want your server to render a pre-authentication-state (like a page with placeholders), and then have the client deal with authentication.
 
-### For server-side rendering
+#### For server-side rendering
 
 For a server-rendered page, you first need to fetch the user information.
 
@@ -206,7 +214,7 @@ export default function Home(props: { initialAuth: AuthTokens }) {
 }
 ```
 
-### For client-side rendering only
+#### For client-side rendering only
 
 When you want to skip the auth check on the server, you can use client-side rendering.
 By calling `useAuth(null)` the page will render as-if no user is authenticated for the first render.
@@ -228,3 +236,5 @@ export default function Home(props: { initialAuth: AuthTokens }) {
 ```
 
 After the first render, `useAuth` will check whether a user is authenticated on the client and rerender the page if so.
+
+### `useAuthFunctions`

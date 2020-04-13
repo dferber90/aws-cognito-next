@@ -1,6 +1,7 @@
 import React, { ReactNode } from "react";
 import { getCognitoCookieInfo } from "./cognito";
 import { AUTH_SYNC_KEY } from "./auth";
+import PropTypes from "prop-types";
 
 // When a user comes back from authenticating, the url looks like this:
 //   /autosignin#id_token=....
@@ -13,6 +14,7 @@ import { AUTH_SYNC_KEY } from "./auth";
 // the necessary cookies ready.
 export default function Token(props: {
   children: ReactNode;
+  userPoolClientId: string;
   onToken: (token: string | null) => void;
 }) {
   const [triggeredReload, setTriggeredReload] = React.useState<boolean>(false);
@@ -33,7 +35,7 @@ export default function Token(props: {
 
       const cognitoCookieInfo = getCognitoCookieInfo(
         document.cookie,
-        process.env.USER_POOL_CLIENT_ID!
+        props.userPoolClientId
       );
 
       if (cognitoCookieInfo.idToken) {
@@ -53,3 +55,9 @@ export default function Token(props: {
 
   return <React.Fragment>{props.children}</React.Fragment>;
 }
+
+Token.propTypes = {
+  userPoolClientId: PropTypes.string.isRequired,
+  onToken: PropTypes.func.isRequired,
+  children: PropTypes.node,
+};
