@@ -1,12 +1,6 @@
 import React, { ReactNode } from "react";
-import { useRouter } from "next/router";
 import { getCognitoCookieInfo } from "./cognito";
-import queryString from "query-string";
 import { AUTH_SYNC_KEY } from "./auth";
-
-const extractFirst = (value: string | string[]) => {
-  return Array.isArray(value) ? value[0] : value;
-};
 
 // When a user comes back from authenticating, the url looks like this:
 //   /autosignin#id_token=....
@@ -17,24 +11,20 @@ const extractFirst = (value: string | string[]) => {
 // automatically because the id_token hash is present. Then we redirect the
 // user back to the main page. That page can now use SSR as the user will have
 // the necessary cookies ready.
-export default function Token(props: { children: ReactNode }) {
-  const router = useRouter();
+export default function Token(props: {
+  children: ReactNode;
+  onToken: (token: string | null) => void;
+}) {
   const [triggeredReload, setTriggeredReload] = React.useState<boolean>(false);
+  const { onToken } = props;
 
   React.useEffect(() => {
     // only check when #id_token is in the hash, otherwise cookies can't appear
     // anyways
     if (triggeredReload) return;
 
-    // We are not using the router here, since the query object will be empty
-    // during prerendering if the page is statically optimized.
-    // So the router's location would return no search the first time this
-    // page renders.
-    const redirectUriAfterSignIn =
-      extractFirst(queryString.parse(window.location.search).to || "") || "/";
-
     if (!window.location.hash.includes("id_token=")) {
-      router.replace(redirectUriAfterSignIn);
+      onToken(null);
       return;
     }
 
@@ -46,13 +36,10 @@ export default function Token(props: { children: ReactNode }) {
         process.env.USER_POOL_CLIENT_ID!
       );
 
-      console.log(cognitoCookieInfo);
-
       if (cognitoCookieInfo.idToken) {
-        console.log("decided to reload");
         setTriggeredReload(true);
-        router.replace(redirectUriAfterSignIn);
         localStorage.setItem(AUTH_SYNC_KEY, "login");
+        onToken(cognitoCookieInfo.idToken);
       }
     }
 
@@ -62,7 +49,7 @@ export default function Token(props: { children: ReactNode }) {
     return () => {
       clearInterval(interval);
     };
-  }, [triggeredReload, setTriggeredReload, router]);
+  }, [triggeredReload, setTriggeredReload, onToken]);
 
   return <React.Fragment>{props.children}</React.Fragment>;
 }

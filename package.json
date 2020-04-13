@@ -8,12 +8,6 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc"
   },
-  "files": [
-    "dist",
-    "executable",
-    "README.md",
-    "yarn.lock"
-  ],
   "keywords": [
     "aws-amplify",
     "amplify",
