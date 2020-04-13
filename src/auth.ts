@@ -292,9 +292,7 @@ export function useAuthFunctions() {
 // automatically because the id_token hash is present. Then we redirect the
 // user back to the main page. That page can now use SSR as the user will have
 // the necessary cookies ready.
-export default function useAuthRedirect(
-  onToken: (token: string | null) => void
-) {
+export function useAuthRedirect(onToken: (token: string | null) => void) {
   const [triggeredReload, setTriggeredReload] = React.useState<boolean>(false);
 
   React.useEffect(() => {
