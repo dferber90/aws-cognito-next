@@ -1,0 +1,62 @@
+{
+  "name": "aws-cognito-next",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
+  },
+  "files": [
+    "dist",
+    "executable",
+    "README.md",
+    "yarn.lock"
+  ],
+  "keywords": [
+    "aws-amplify",
+    "amplify",
+    "next",
+    "nextjs",
+    "authentication",
+    "cognito",
+    "aws",
+    "react"
+  ],
+  "bin": {
+    "prepare-pems": "./executable/prepare-pems.js"
+  },
+  "author": "Dominik Ferber <dominik.ferber+npm@gmail.com> (http://dferber.de/)",
+  "license": "MIT",
+  "peerDependencies": {
+    "@aws-amplify/auth": "^3.2.3",
+    "@aws-amplify/core": "^3.2.3",
+    "next": "^9.3.0",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1"
+  },
+  "devDependencies": {
+    "@aws-amplify/auth": "^3.2.3",
+    "@aws-amplify/core": "^3.2.3",
+    "next": "^9.3.0",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "typescript": "3.8.3"
+  },
+  "dependencies": {
+    "@types/base-64": "^0.1.3",
+    "@types/cookie": "^0.3.3",
+    "@types/jsonwebtoken": "^8.3.9",
+    "@types/jwk-to-pem": "^2.0.0",
+    "@types/react": "^16.9.34",
+    "@types/react-dom": "^16.9.6",
+    "base-64": "^0.1.0",
+    "cookie": "^0.4.0",
+    "jsonwebtoken": "^8.5.1",
+    "jwk-to-pem": "^2.0.3",
+    "node-fetch": "^2.6.0",
+    "query-string": "^6.12.1",
+    "yargs": "^15.3.1"
+  }
+}
