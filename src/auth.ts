@@ -84,14 +84,14 @@ function verifyToken<T extends { sub: string }>({
 
 function getAuthFromCookies(
   pems: AWSCognitoPublicPem[],
-  userPoolClientId: string,
   cookie?: string
 ): AuthTokens {
   if (!cookie) return null;
+  const userPoolWebClientId = Auth.configure(null).userPoolWebClientId;
 
   const { idToken, accessToken } = getCognitoCookieInfo(
     cookie,
-    userPoolClientId
+    userPoolWebClientId
   );
 
   if (!idToken || !accessToken) return null;
@@ -99,12 +99,12 @@ function getAuthFromCookies(
   const idTokenData = verifyToken<IdTokenData>({
     pems,
     token: idToken,
-    validate: (data) => data.aud === userPoolClientId,
+    validate: (data) => data.aud === userPoolWebClientId,
   });
   const accessTokenData = verifyToken<AccessTokenData>({
     pems,
     token: accessToken,
-    validate: (data) => data.client_id === userPoolClientId,
+    validate: (data) => data.client_id === userPoolWebClientId,
   });
 
   if (!idTokenData || !accessTokenData) return null;
@@ -114,18 +114,23 @@ function getAuthFromCookies(
 
 export function createGetServerSideAuth({
   pems,
-  userPoolClientId,
 }: {
   pems: AWSCognitoPublicPem[];
-  userPoolClientId: string;
 }) {
   return function getServerSideAuth(req: IncomingMessage): AuthTokens {
-    return getAuthFromCookies(pems, userPoolClientId, req.headers.cookie);
+    return getAuthFromCookies(pems, req.headers.cookie);
   };
 }
 
 // auto-login in case auth cookies have been added
-function useAutoLogin(auth: AuthTokens, userPoolClientId: string) {
+function useAutoLogin(auth: AuthTokens, userPoolWebClientId?: string) {
+  if (!userPoolWebClientId)
+    // To fix this issue, call
+    // Amplify.configure({ Auth: { userPoolWebClientId: <userPoolClientId> } })
+    throw new Error(
+      "Missing configuration value for userPoolWebClientId in Amplify's Auth"
+    );
+
   // check on window activation
   React.useEffect(() => {
     // use localStorage to sync auth state across tabs
@@ -138,7 +143,7 @@ function useAutoLogin(auth: AuthTokens, userPoolClientId: string) {
 
       const { idToken } = getCognitoCookieInfo(
         document.cookie,
-        userPoolClientId
+        userPoolWebClientId
       );
 
       // login when user was not signed in before, or when the idToken changed
@@ -160,7 +165,14 @@ function useAutoLogin(auth: AuthTokens, userPoolClientId: string) {
   }, [auth]);
 }
 
-function useAutoLogout(auth: AuthTokens, userPoolClientId: string) {
+function useAutoLogout(auth: AuthTokens, userPoolWebClientId?: string) {
+  if (!userPoolWebClientId)
+    // To fix this issue, call
+    // Amplify.configure({ Auth: { userPoolWebClientId: <userPoolClientId> } })
+    throw new Error(
+      "Missing configuration value for userPoolWebClientId in Amplify's Auth"
+    );
+
   const isAuthenticated = Boolean(auth);
 
   // auto-logout in case loginsub cookie has been removed
@@ -168,7 +180,7 @@ function useAutoLogout(auth: AuthTokens, userPoolClientId: string) {
     const listener = () => {
       const { idToken } = getCognitoCookieInfo(
         document.cookie,
-        userPoolClientId
+        userPoolWebClientId
       );
 
       // User signed out locally, but server-side props still contain cookies.
@@ -217,18 +229,13 @@ type LogoutFunction = (redirectAfterSignOut?: string) => void;
 //
 // This hook is expected to be only called once per page at the moment.
 // Pass the auth-state down to components using props if they need it.
-export function createUseAuth({
-  pems,
-  userPoolClientId,
-}: {
-  pems: AWSCognitoPublicPem[];
-  userPoolClientId: string;
-}) {
+export function createUseAuth({ pems }: { pems: AWSCognitoPublicPem[] }) {
   return function useAuth(initialAuth: AuthTokens): AuthTokens {
     const [auth, setAuth] = React.useState<AuthTokens>(initialAuth);
 
-    useAutoLogin(auth, userPoolClientId);
-    useAutoLogout(auth, userPoolClientId);
+    const userPoolWebClientId = Auth.configure(null).userPoolWebClientId;
+    useAutoLogin(auth, userPoolWebClientId);
+    useAutoLogout(auth, userPoolWebClientId);
 
     React.useEffect(() => {
       // When there is a cookie, this takes ~100ms since it's verifying the cookie
@@ -239,11 +246,7 @@ export function createUseAuth({
       //
       // Note that getAuthFromCookies also runs on the server, so improvements
       // can not have caching-problems.
-      const cookieAuth = getAuthFromCookies(
-        pems,
-        userPoolClientId,
-        document.cookie
-      );
+      const cookieAuth = getAuthFromCookies(pems, document.cookie);
       setAuth(cookieAuth);
     }, []);
 
@@ -278,4 +281,55 @@ export function useAuthFunctions() {
   );
 
   return { login, logout };
+}
+
+// When a user comes back from authenticating, the url looks like this:
+//   /token#id_token=....
+// At this point, there will be no cookies yet. If we would render any page on
+// the server now, it would seem as-if the user is not authenticated yet.
+//
+// We therefore wait until Amplify has set its cookies. It does this
+// automatically because the id_token hash is present. Then we redirect the
+// user back to the main page. That page can now use SSR as the user will have
+// the necessary cookies ready.
+export default function useAuthRedirect(
+  onToken: (token: string | null) => void
+) {
+  const [triggeredReload, setTriggeredReload] = React.useState<boolean>(false);
+
+  React.useEffect(() => {
+    // only check when #id_token is in the hash, otherwise cookies can't appear
+    // anyways
+    if (triggeredReload) return;
+
+    if (!window.location.hash.includes("id_token=")) {
+      onToken(null);
+      return;
+    }
+
+    function refreshOnAuthCookies() {
+      if (triggeredReload) return;
+
+      const userPoolWebClientId = Auth.configure(null).userPoolWebClientId;
+      const cognitoCookieInfo = getCognitoCookieInfo(
+        document.cookie,
+        userPoolWebClientId
+      );
+
+      if (cognitoCookieInfo.idToken) {
+        setTriggeredReload(true);
+        localStorage.setItem(AUTH_SYNC_KEY, "login");
+        onToken(cognitoCookieInfo.idToken);
+      }
+    }
+
+    refreshOnAuthCookies();
+    const interval = setInterval(refreshOnAuthCookies, 100);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [triggeredReload, setTriggeredReload, onToken]);
+
+  return null;
 }

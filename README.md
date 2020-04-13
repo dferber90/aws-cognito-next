@@ -113,14 +113,9 @@ Create a file called `_auth.tsx` inside your `pages` folder, and fill it with th
 import { createGetServerSideAuth, createUseAuth } from "aws-cognito-next";
 import pems from "../pems.json";
 
-const config = {
-  pems,
-  userPoolClientId: process.env.USER_POOL_CLIENT_ID,
-};
-
-// create functions by passing config
-export const getServerSideAuth = createGetServerSideAuth(config);
-export const useAuth = createUseAuth(config);
+// create functions by passing pems
+export const getServerSideAuth = createGetServerSideAuth({ pems });
+export const useAuth = createUseAuth({ pems });
 
 // reexport functions from aws-cognito-next
 export * from "aws-cognito-next";
@@ -135,7 +130,7 @@ In your application, you can now import everything related to auth from `_auth.t
 ```tsx
 import React from "react";
 import { useRouter } from "next/router";
-import { Token } from "aws-cognito-next";
+import { useAuthRedirect } from "aws-cognito-next";
 import queryString from "query-string";
 
 const extractFirst = (value: string | string[]) => {
@@ -153,23 +148,18 @@ const extractFirst = (value: string | string[]) => {
 // the necessary cookies ready.
 export default function TokenSetter() {
   const router = useRouter();
-  return (
-    <Token
-      userPoolClientId={process.env.USER_POOL_CLIENT_ID}
-      onToken={() => {
-        // We are not using the router here, since the query object will be empty
-        // during prerendering if the page is statically optimized.
-        // So the router's location would return no search the first time.
-        const redirectUriAfterSignIn =
-          extractFirst(queryString.parse(window.location.search).to || "") ||
-          "/";
 
-        router.replace(redirectUriAfterSignIn);
-      }}
-    >
-      <p>loading..</p>
-    </Token>
-  );
+  useAuthRedirect(() => {
+    // We are not using the router here, since the query object will be empty
+    // during prerendering if the page is statically optimized.
+    // So the router's location would return no search the first time.
+    const redirectUriAfterSignIn =
+      extractFirst(queryString.parse(window.location.search).to || "") || "/";
+
+    router.replace(redirectUriAfterSignIn);
+  });
+
+  return <p>loading..</p>;
 }
 ```
 

@@ -9,16 +9,23 @@ const unauthenticatedCookies = {
 // returns all auth cookies
 export function getCognitoCookieInfo(
   cookieString: string | undefined,
-  userPoolClientId: string
+  userPoolWebClientId?: string
 ): {
   lastUser: string | null;
   idToken: string | null;
   accessToken: string | null;
 } {
+  if (!userPoolWebClientId)
+    // To fix this issue, call
+    // Amplify.configure({ Auth: { userPoolWebClientId: <userPoolClientId> } })
+    throw new Error(
+      "Missing configuration value for userPoolWebClientId in Amplify's Auth"
+    );
+
   if (!cookieString) return unauthenticatedCookies;
 
   const cookieData: { [key: string]: string } = cookie.parse(cookieString);
-  const prefix = `CognitoIdentityServiceProvider.${userPoolClientId}`;
+  const prefix = `CognitoIdentityServiceProvider.${userPoolWebClientId}`;
   const lastUserKey = `${prefix}.LastAuthUser`;
   const lastUser = cookieData[lastUserKey] ? cookieData[lastUserKey] : null;
 
