@@ -21,7 +21,7 @@ const argv = require("yargs")
 
 const region = argv.region;
 const userPoolId = argv.userPoolId;
-const outputFile = argv.out;
+const out = argv.out;
 
 // A script which creates pems.json depending on the env-vars by fetching them
 // from the URL shown in the docs below and writing the result to pems.json.
@@ -51,17 +51,24 @@ fetch(url)
         return process.exit(1);
       }
 
+      const outputFile = path.join(process.cwd(), out);
+
+      let existingPems;
+      try {
+        existingPems = require(outputFile);
+      } catch (e) {
+        existingPems = {};
+      }
+
       // map public-keys to pems, so the client/server don't need to do it
       // on every request
-      const pems = res.keys.map((key) => ({
-        kid: key.kid,
-        pem: jwkToPem(key),
-      }));
+      const pems = res.keys.reduce((acc, key) => {
+        if (!acc[region]) acc[region] = { [userPoolId]: {} };
+        acc[region][userPoolId][key.kid] = jwkToPem(key);
+        return acc;
+      }, existingPems);
 
-      fs.writeFileSync(
-        path.join(process.cwd(), outputFile),
-        JSON.stringify(pems, null, 2)
-      );
+      fs.writeFileSync(outputFile, JSON.stringify(pems, null, 2));
     },
     () => {
       const red = (str) => `\x1b[31m${str}\x1b[0m`;

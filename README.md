@@ -72,7 +72,7 @@ Run it once to create the initial `pems.json` file. You can run it like this:
 USER_POOL_REGION=<userPoolRegion> USER_POOL_ID=<userPoolId> yarn pems:prepare
 ```
 
-You can rerun `yarn pems:prepare` whenever you need to refresh the keys.
+You can rerun `yarn pems:prepare` whenever you need to refresh the keys. In case a `pems.json` file exists already, the new pems will be added to the file. You can have the pems for multiple user pools in the same file. It's okay to add the pems for the user pools of development, staging and production to the same `pems.json` file. The appropriate pems will be loaded automatically.
 
 #### Setup env vars
 

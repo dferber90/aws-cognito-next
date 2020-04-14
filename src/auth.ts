@@ -42,9 +42,13 @@ export type AuthTokens = {
   accessToken: string;
 } | null;
 
-type AWSCognitoPublicPem = {
-  kid: string;
-  pem: string;
+type AWSCognitoPublicPem = string;
+type AWSCognitoPublicPems = {
+  [region: string]: {
+    [userPoolId: string]: {
+      [kid: string]: AWSCognitoPublicPem;
+    };
+  };
 };
 
 // Notify other tabs after signing the user in/out
@@ -52,13 +56,19 @@ export function sync(action: "login" | "logout") {
   localStorage.setItem(AUTH_SYNC_KEY, action);
 }
 
-function findMatchingPem(
-  pems: AWSCognitoPublicPem[],
+function getMatchingPem(
+  pems: AWSCognitoPublicPems,
   token: string
 ): AWSCognitoPublicPem | undefined {
   if (!token) return undefined;
+
+  const config = Auth.configure(null);
+  if (!config.region || !config.userPoolId) return undefined;
+  if (!pems[config.region]) return undefined;
+  if (!pems[config.region][config.userPoolId]) return undefined;
+
   const header = JSON.parse(base64.decode(token.split(".")[0]));
-  return pems.find((pem) => pem.kid === header.kid);
+  return pems[config.region][config.userPoolId][header.kid];
 }
 
 function verifyToken<T extends { sub: string }>({
@@ -66,15 +76,14 @@ function verifyToken<T extends { sub: string }>({
   token,
   validate,
 }: {
-  pems: AWSCognitoPublicPem[];
+  pems: AWSCognitoPublicPems;
   token: string | null;
   validate?: (data: T) => boolean;
 }): null | T {
   if (!token) return null;
   try {
-    const pemEntry = findMatchingPem(pems, token);
-    if (!pemEntry) return null;
-    const pem = pemEntry.pem;
+    const pem = getMatchingPem(pems, token);
+    if (!pem) return null;
     const data = jwt.verify(token, pem, { algorithms: ["RS256"] }) as T;
     if (!data) return null;
     if (validate ? !validate(data) : false) return null;
@@ -88,7 +97,7 @@ function verifyToken<T extends { sub: string }>({
 }
 
 function getAuthFromCookies(
-  pems: AWSCognitoPublicPem[],
+  pems: AWSCognitoPublicPems,
   cookie?: string
 ): AuthTokens {
   if (!cookie) return null;
@@ -120,7 +129,7 @@ function getAuthFromCookies(
 export function createGetServerSideAuth({
   pems,
 }: {
-  pems: AWSCognitoPublicPem[];
+  pems: AWSCognitoPublicPems;
 }) {
   return function getServerSideAuth(req: IncomingMessage): AuthTokens {
     return getAuthFromCookies(pems, req.headers.cookie);
@@ -234,7 +243,7 @@ type LogoutFunction = (redirectAfterSignOut?: string) => void;
 //
 // This hook is expected to be only called once per page at the moment.
 // Pass the auth-state down to components using props if they need it.
-export function createUseAuth({ pems }: { pems: AWSCognitoPublicPem[] }) {
+export function createUseAuth({ pems }: { pems: AWSCognitoPublicPems }) {
   return function useAuth(initialAuth: AuthTokens): AuthTokens {
     const [auth, setAuth] = React.useState<AuthTokens>(initialAuth);
 
