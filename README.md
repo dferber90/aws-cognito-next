@@ -302,8 +302,6 @@ export default function SomePage() {
 }
 ```
 
-Both, `login` and `logout` accept one optional parameter. You can use that to redirect the user to any page after login / logout.
-
 ### `useAuthRedirect`
 
 When Coginto authenticated the user, the user will be redirected to `/token#<hash>`. The hash of the URL will contain the user's access and id tokens. Amplify will read the hash and set the cookies accordingly. Once the cookies are set, even pages depending on the authenticated user can be rendered on the server.

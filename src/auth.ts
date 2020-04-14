@@ -5,7 +5,7 @@ import { IncomingMessage } from "http";
 import jwt, { TokenExpiredError } from "jsonwebtoken";
 import base64 from "base-64";
 
-export const AUTH_SYNC_KEY = "auth_sync_key";
+const AUTH_SYNC_KEY = "auth_sync_key";
 
 export type IdTokenData = {
   sub: string;
@@ -46,6 +46,11 @@ type AWSCognitoPublicPem = {
   kid: string;
   pem: string;
 };
+
+// Notify other tabs after signing the user in/out
+export function sync(action: "login" | "logout") {
+  localStorage.setItem(AUTH_SYNC_KEY, action);
+}
 
 function findMatchingPem(
   pems: AWSCognitoPublicPem[],
@@ -255,28 +260,10 @@ export function createUseAuth({ pems }: { pems: AWSCognitoPublicPem[] }) {
 }
 
 export function useAuthFunctions() {
-  const login: LoginFunction = React.useCallback((redirectAfterSignInUrl) => {
-    const defaultRedirectUrl =
-      window.location.pathname + window.location.search + window.location.hash;
-    const redirectAfterSignIn = redirectAfterSignInUrl || defaultRedirectUrl;
+  const login = React.useCallback(() => Auth.federatedSignIn(), []);
 
-    const config = Auth.configure(null);
-    Auth.configure({ oauth: { ...config.oauth, redirectAfterSignIn } });
-    Auth.federatedSignIn();
-  }, []);
-
-  const logout: LogoutFunction = React.useCallback(
-    (redirectAfterSignOutUrl) => {
-      const defaultRedirectUrl = window.location.href;
-      const redirectAfterSignOut =
-        redirectAfterSignOutUrl || defaultRedirectUrl;
-
-      const config = Auth.configure(null);
-      Auth.configure({ oauth: { ...config.oauth, redirectAfterSignOut } });
-      Auth.signOut().then(() => {
-        localStorage.setItem(AUTH_SYNC_KEY, "logout");
-      });
-    },
+  const logout = React.useCallback(
+    () => Auth.signOut().then((res) => sync("logout")),
     []
   );
 
@@ -316,7 +303,7 @@ export function useAuthRedirect(onToken: (token: string | null) => void) {
 
       if (cognitoCookieInfo.idToken) {
         setTriggeredReload(true);
-        localStorage.setItem(AUTH_SYNC_KEY, "login");
+        sync("login");
         onToken(cognitoCookieInfo.idToken);
       }
     }
