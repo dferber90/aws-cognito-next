@@ -64,6 +64,7 @@ fetch(url)
       // on every request
       const pems = res.keys.reduce((acc, key) => {
         if (!acc[region]) acc[region] = { [userPoolId]: {} };
+        if (!acc[region][userPoolId]) acc[region][userPoolId] = {};
         acc[region][userPoolId][key.kid] = jwkToPem(key);
         return acc;
       }, existingPems);
