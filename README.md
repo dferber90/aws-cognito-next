@@ -17,11 +17,12 @@ See [MDN](https://developer.mozilla.org/de/docs/Web/HTTP/Cookies) for more infor
 - [Setup](#setup)
   - [Installation](#installation)
   - [Integration](#integration)
-    - [Add `pems:prepare` script](#add-pemsprepare-script)
+    - [Fetch public keys](#fetch-public-keys)
     - [Setup env vars](#setup-env-vars)
     - [\_app.tsx](#_app.tsx)
-    - [\_auth.ts](#_authts)
+    - [\auth.ts](#_authts)
     - [pages/token.tsx](#pagestokentsx)
+    - [Adding login and logout buttons](#adding-login-and-logout-buttons)
 - [Usage](#usage)
   - [useAuth](#useauth)
     - [For server-side rendering](#for-server-side-rendering)
@@ -47,32 +48,25 @@ yarn add @aws-amplify/auth @aws-amplify/core
 
 This library integrates with your application in a few different places. Follow these steps to set it up properly.
 
-#### Add `pems:prepare` script
+#### Fetch public keys
 
-Add the `pems:prepare` to the `scripts` section in your `package.json`.
+Your user pool comes with RSA key pairs. The tokens will be signed with the private key. You can use the public key to verify the token signature. The public keys of your user pool are available at this url:
 
-```jsonc
-{
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-
-    // add this
-    "pems:prepare": "prepare-pems --region $USER_POOL_REGION --userPoolId $USER_POOL_ID"
-  }
-}
+```
+https://cognito-idp.{region}.amazonaws.com/{userPoolId}/.well-known/jwks.json
 ```
 
-When you execute `pems:prepare`, the script will create a `pems.json` file containing the public keys of your AWS Cognito User Pool as pems. Commit that file to your project.
+The `aws-cognito-next` package expects your public keys in the pem format. It's best to download the keys once upfront, and to then convert them to pems directly. This way the application doesn't have to fetch and convert the pems over and over again.
 
-Run it once to create the initial `pems.json` file. You can run it like this:
+A script to fetch the public keys, convert them to the pem format and to save them to a file called `pems.json` comes with `aws-cognito-next`.
 
-```bash
-USER_POOL_REGION=<userPoolRegion> USER_POOL_ID=<userPoolId> yarn pems:prepare
+Execute the following command to fetch the keys, convert them and save them to `pems.json`:
+
+```
+yarn prepare-pems --region <region> --userPoolId <userPoolId>
 ```
 
-You can rerun `yarn pems:prepare` whenever you need to refresh the keys. In case a `pems.json` file exists already, the new pems will be added to the file. You can have the pems for multiple user pools in the same file. It's okay to add the pems for the user pools of development, staging and production to the same `pems.json` file. The appropriate pems will be loaded automatically.
+You can rerun that command whenever you need to refresh the keys. In case a `pems.json` file exists already, the new pems will be added to the file. You can have the pems for multiple user pools in the same file. It's okay to add the pems for the user pools of development, staging and production to the same `pems.json` file. The appropriate pems will be loaded automatically. You can commit that file to your version control system.
 
 #### Setup env vars
 
@@ -91,6 +85,8 @@ REDIRECT_SIGN_IN=http://localhost:3000/token
 REDIRECT_SIGN_OUT=http://localhost:3000/
 AUTH_COOKIE_DOMAIN=localhost
 ```
+
+One convenient way to do that can be seen [here](https://github.com/dferber90/aws-cognito-next-example-app/blob/master/next.config.js).
 
 #### `_app.tsx`
 
@@ -150,17 +146,17 @@ function App({ Component, pageProps }) {
 export default App;
 ```
 
-#### `_auth.ts`
+#### `auth.ts`
 
-The application needs to know about your AWS Cognito User Pool's public pems, which you created earlier by executing `yarn pems:perpare` in the first step of the setup.
+The application needs to know about your AWS Cognito User Pool's public pems, which you created earlier by executing `yarn perpare-pems` in the first step of the setup.
 
 It would be inconvenient to pass the pem files to `aws-cognito-next`'s functions over and over again. Instead you'll use factory functions to create your auth functions.
 
-Create a file called `pages/_auth.tsx` and fill it with the following content:
+Create a file called `auth.tsx` and fill it with the following content:
 
 ```tsx
 import { createGetServerSideAuth, createUseAuth } from "aws-cognito-next";
-import pems from "../pems.json";
+import pems from "./pems.json";
 
 // create functions by passing pems
 export const getServerSideAuth = createGetServerSideAuth({ pems });
@@ -170,20 +166,24 @@ export const useAuth = createUseAuth({ pems });
 export * from "aws-cognito-next";
 ```
 
-In your application, you can now import everything related to auth from `_auth.tsx`, as you'll see in the next step.
+In your application, you can now import everything related to auth from `auth.tsx`, as you'll see in the next step.
 
-> It's recommended to not import from `aws-cognito-next`. `_auth.tsx` will be a superset of `aws-cognito-auth`. This means `useAuth` and `getServerSideAuth` is only exported from `_auth.tsx`, but not from `aws-cognito-next`. Since you don't want to end up with different imports for the same things, it's better to stick to `_auth.tsx`.
+> It's recommended to not import from `aws-cognito-next`. `auth.tsx` will be a superset of `aws-cognito-next`. This means `useAuth` and `getServerSideAuth` is only exported from `auth.tsx`, but not from `aws-cognito-next`. Since you don't want to end up with different imports for the same things, it's better to stick to `auth.tsx`.
 
 #### `pages/token.tsx`
+
+Once users are signed in, they will be redirected to `/token` as you've configured using `redirectSignIn` in the `_app.tsx` component earlier. The page rendered at `/token` then needs to receive the token from the hash and sign in. It also needs to tell inform other tabs that the user is now signed in. These things are handled by Amplify and useAuthRedirect respectively.
+
+Create a file called `pages/token.tsx` and fill it with this content:
 
 ```tsx
 import React from "react";
 import { useRouter } from "next/router";
 
-// Here we import useAuthRedirect from _auth.tsx, instead
+// Here we import useAuthRedirect from auth.tsx, instead
 // of from aws-cognito-next.
 // We created that file in the previous step.
-import { useAuthRedirect } from "./_auth.tsx";
+import { useAuthRedirect } from "../auth.tsx";
 
 // When a user comes back from authenticating, the url looks
 // like this: /token#id_token=....
@@ -205,6 +205,53 @@ export default function Token() {
 
   return <p>loading..</p>;
 }
+```
+
+#### Adding login and logout buttons
+
+The `login` and `logout` functions can be used to prompt the user to sign in or out.
+They will sync the login state across multiple tabs.
+
+```tsx
+import React from "react";
+import { GetServerSideProps } from "next";
+import {
+  AuthTokens,
+  useAuth,
+  useAuthFunctions,
+  getServerSideAuth,
+} from "../auth";
+
+const Home = (props: { initialAuth: AuthTokens }) => {
+  const auth = useAuth(props.initialAuth);
+  const { login, logout } = useAuthFunctions();
+
+  return (
+    <React.Fragment>
+      {auth ? (
+        <button type="button" onClick={() => logout()}>
+          sign out
+        </button>
+      ) : (
+        <React.Fragment>
+          <button type="button" onClick={() => login()}>
+            sign in
+          </button>
+        </React.Fragment>
+      )}
+    </React.Fragment>
+  );
+};
+
+export const getServerSideProps: GetServerSideProps<{
+  initialAuth: AuthTokens;
+}> = async (context) => {
+  const initialAuth = getServerSideAuth(context.req);
+
+  return { props: { initialAuth } };
+};
+
+export default Home;
 ```
 
 ## Usage
