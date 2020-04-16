@@ -12,6 +12,8 @@ While the auth cookies are sent with the `secure` flag enabled (only over HTTPS)
 
 See [MDN](https://developer.mozilla.org/de/docs/Web/HTTP/Cookies) for more information about `secure` and `httpOnly` cookies.
 
+> _This project is fairly new, so use it with caution. I'm actively welcoming additions using PRs. All core features are working, and I would consider the project ready for production. Just know that you'll be one of the first ones to take it to production._
+
 ## Table of contents
 
 - [Setup](#setup)
