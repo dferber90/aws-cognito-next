@@ -2,6 +2,11 @@
 
 Authentication helpers to enable usage of [AWS Cognito](https://aws.amazon.com/en/cognito/) in [next.js](https://nextjs.org/) applications.
 
+### Quick links
+
+- [Live demo](https://aws-cognito-next-example-app.now.sh/)
+- [In-depth article](https://medium.com/frontend-digest/authentication-in-next-js-using-amazon-cognito-f30efed6a24f?source=friends_link&sk=c68b2a89bc4d38add29f52199df80cc8)
+
 ### Pros
 
 Supports server-side rendering of pages depending on the authenticated user. It's also flexible enough to support statically rendered pages, where the client then adds authentication information once the app is hydrated. It syncs auth state across multiple tabs. Auth information is sent to the server using Cognito's cookies, so the authenticated user is available in your API functions.
