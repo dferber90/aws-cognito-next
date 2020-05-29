@@ -308,8 +308,8 @@ When you want to skip the auth check on the server, you can use client-side rend
 By calling `useAuth(null)` the page will render as-if no user is authenticated for the first render.
 
 ```tsx
-export default function Home(props: { initialAuth: AuthTokens }) {
-  const auth = useAuth(props.initialAuth);
+export default function Home(props) {
+  const auth = useAuth(null);
 
   return (
     <React.Fragment>
