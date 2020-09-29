@@ -2,6 +2,8 @@
 
 Authentication helpers to enable usage of [AWS Cognito](https://aws.amazon.com/en/cognito/) in [next.js](https://nextjs.org/) applications.
 
+> **Update (2020–09–29)**: aws-amplify has added support for server-side rendering since this package was created. You can read [the announcement](https://aws.amazon.com/de/blogs/mobile/ssr-support-for-aws-amplify-javascript-libraries/) for details. You might be able to use aws-amplify directly instead of the more manual approach shown in this package. This package might get rewritten to provide additional features on top of `aws-amplify` in the future.
+
 ### Quick links
 
 - [Live demo](https://aws-cognito-next-example-app.now.sh/)
@@ -21,21 +23,26 @@ See [MDN](https://developer.mozilla.org/de/docs/Web/HTTP/Cookies) for more infor
 
 ## Table of contents
 
-- [Setup](#setup)
-  - [Installation](#installation)
-  - [Integration](#integration)
-    - [Fetch public keys](#fetch-public-keys)
-    - [Setup env vars](#setup-env-vars)
-    - [\_app.tsx](#_app.tsx)
-    - [\auth.ts](#_authts)
-    - [pages/token.tsx](#pagestokentsx)
-    - [Adding login and logout buttons](#adding-login-and-logout-buttons)
-- [Usage](#usage)
-  - [useAuth](#useauth)
-    - [For server-side rendering](#for-server-side-rendering)
-    - [For client-side rendering only](#for-client-side-rendering-only)
-  - [useAuthFunctions](#useauthfunctions)
-  - [useAuthRedirect](#useauthredirect)
+- [aws-cognito-next](#aws-cognito-next)
+    - [Quick links](#quick-links)
+    - [Pros](#pros)
+    - [Cons](#cons)
+  - [Table of contents](#table-of-contents)
+  - [Setup](#setup)
+    - [Installation](#installation)
+    - [Integration](#integration)
+      - [Fetch public keys](#fetch-public-keys)
+      - [Setup env vars](#setup-env-vars)
+      - [`_app.tsx`](#_apptsx)
+      - [`auth.ts`](#authts)
+      - [`pages/token.tsx`](#pagestokentsx)
+      - [Adding login and logout buttons](#adding-login-and-logout-buttons)
+  - [Usage](#usage)
+    - [`useAuth`](#useauth)
+      - [For server-side rendering](#for-server-side-rendering)
+      - [For client-side rendering only](#for-client-side-rendering-only)
+    - [`useAuthFunctions`](#useauthfunctions)
+    - [`useAuthRedirect`](#useauthredirect)
 
 ## Setup
 
