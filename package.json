@@ -64,5 +64,5 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/dferber90/aws-cognito-next"
-  },
+  }
 }
