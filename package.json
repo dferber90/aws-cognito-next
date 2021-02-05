@@ -33,9 +33,9 @@
   "peerDependencies": {
     "@aws-amplify/auth": "^3.2.3",
     "@aws-amplify/core": "^3.2.3",
-    "next": "^9.3.0",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1"
+    "next": ">=9.3.0",
+    "react": ">=16.13.1",
+    "react-dom": ">=16.13.1"
   },
   "devDependencies": {
     "@aws-amplify/auth": "^3.2.3",
@@ -60,5 +60,9 @@
     "prop-types": "15.7.2",
     "query-string": "^6.12.1",
     "yargs": "^15.3.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dferber90/aws-cognito-next"
+  },
 }
