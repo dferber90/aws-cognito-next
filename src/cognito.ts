@@ -8,7 +8,7 @@ const unauthenticatedCookies = {
 
 // if userId has a plus sign e.g. me+mine@gmail.com then the cookie key 
 // preserves the plus sign
-function userIdToTokenKey(userId){
+function userIdToTokenKey(userId:string) :string{
   return encodeURIComponent(userId).replace(/%2B/g, '+');
 }
 
