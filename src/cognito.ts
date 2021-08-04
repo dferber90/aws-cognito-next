@@ -6,6 +6,12 @@ const unauthenticatedCookies = {
   accessToken: null,
 };
 
+// if userId has a plus sign e.g. me+mine@gmail.com then the cookie key 
+// preserves the plus sign
+function userIdToTokenKey(userId){
+  return encodeURIComponent(userId).replace(/%2B/g, '+');
+}
+
 // returns all auth cookies
 export function getCognitoCookieInfo(
   cookieString: string | undefined,
@@ -30,12 +36,12 @@ export function getCognitoCookieInfo(
   const lastUser = cookieData[lastUserKey] ? cookieData[lastUserKey] : null;
 
   const idTokenKey = lastUser
-    ? `${prefix}.${encodeURIComponent(lastUser)}.idToken`
+    ? `${prefix}.${userIdToTokenKey(lastUser)}.idToken`
     : null;
   const idToken =
     idTokenKey && cookieData[idTokenKey] ? cookieData[idTokenKey] : null;
   const accessTokenKey = lastUser
-    ? `${prefix}.${encodeURIComponent(lastUser)}.accessToken`
+    ? `${prefix}.${userIdToTokenKey(lastUser)}.accessToken`
     : null;
   const accessToken =
     accessTokenKey && cookieData[accessTokenKey]
