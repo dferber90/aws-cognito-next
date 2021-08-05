@@ -6,10 +6,11 @@ const unauthenticatedCookies = {
   accessToken: null,
 };
 
-// if userId has a plus sign e.g. me+mine@gmail.com then the cookie key 
-// preserves the plus sign
-function userIdToTokenKey(userId:string) :string{
-  return encodeURIComponent(userId).replace(/%2B/g, '+');
+// use same algorithm as js-cookie as used in aws-amplify/auth@4.20
+function userIdToTokenKey(key:string) :string{
+   return encodeURIComponent(key)
+      .replace(/%(2[346B]|5E|60|7C)/g, decodeURIComponent)
+      .replace(/[()]/g, escape);
 }
 
 // returns all auth cookies
