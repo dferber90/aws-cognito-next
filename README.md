@@ -2,7 +2,7 @@
 
 Authentication helpers to enable usage of [AWS Cognito](https://aws.amazon.com/en/cognito/) in [next.js](https://nextjs.org/) applications.
 
-> **Update (2020–09–29)**: aws-amplify has added support for server-side rendering since this package was created. You can read [the announcement](https://aws.amazon.com/de/blogs/mobile/ssr-support-for-aws-amplify-javascript-libraries/) for details. You might be able to use aws-amplify directly instead of the more manual approach shown in this package. This package might get rewritten to provide additional features on top of `aws-amplify` in the future.
+> **Update (2020–09–29)**: aws-amplify has added support for server-side rendering since this package was created. You can read [the announcement](https://aws.amazon.com/de/blogs/mobile/ssr-support-for-aws-amplify-javascript-libraries/) for details. You might be able to use aws-amplify directly instead of the more manual approach shown in this package.
 
 ### Quick links
 
