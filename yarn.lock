@@ -1453,17 +1453,17 @@
   resolved "https://registry.yarnpkg.com/@types/js-cookie/-/js-cookie-2.2.7.tgz#226a9e31680835a6188e887f3988e60c04d3f6a3"
   integrity sha512-aLkWa0C0vO5b4Sr798E26QgOkss68Un0bLjs7u9qxzPT5CG+8DuNTffWES58YzJs3hrVAOs1wonycqEBqNJubA==
 
-"@types/jsonwebtoken@^8.3.9":
-  version "8.3.9"
-  resolved "https://registry.yarnpkg.com/@types/jsonwebtoken/-/jsonwebtoken-8.3.9.tgz#48da9a49997e4eb046733e6878f583d7448f0594"
-  integrity sha512-00rI8GbOKuRtoYxltFSRTVUXCRLbuYwln2/nUMPtFU9JGS7if+nnmLjeoFGmqsNCmblPLAaeQ/zMLVsHr6T5bg==
+"@types/jsonwebtoken@^8.5.4":
+  version "8.5.4"
+  resolved "https://registry.yarnpkg.com/@types/jsonwebtoken/-/jsonwebtoken-8.5.4.tgz#50ccaf0aa6f5d7b9956e70fe323b76e582991913"
+  integrity sha512-4L8msWK31oXwdtC81RmRBAULd0ShnAHjBuKT9MRQpjP0piNrZdXyTRcKY9/UIfhGeKIT4PvF5amOOUbbT/9Wpg==
   dependencies:
     "@types/node" "*"
 
-"@types/jwk-to-pem@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@types/jwk-to-pem/-/jwk-to-pem-2.0.0.tgz#770ad9cc70134d47283b3c815a064a06f802d065"
-  integrity sha512-m7ZnE+iJodvhu9XNkMc/1CNkIg7432d/YSB8Qo/4TbD86rZ1GgkB4MVTNqIZG5RCtL0H4iVxiMT2OGTQDZEfHg==
+"@types/jwk-to-pem@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@types/jwk-to-pem/-/jwk-to-pem-2.0.1.tgz#ba6949f447e02cb7bebf101551e3a4dea5f4fde4"
+  integrity sha512-QXmRPhR/LPzvXBHTPfG2BBfMTkNLUD7NyRcPft8m5xFCeANa1BZyLgT0Gw+OxdWx6i1WCpT27EqyggP4UUHMrA==
 
 "@types/node@*":
   version "13.11.1"
@@ -1910,6 +1910,11 @@ bn.js@^4.0.0, bn.js@^4.1.0, bn.js@^4.1.1, bn.js@^4.4.0:
   resolved "https://registry.yarnpkg.com/bn.js/-/bn.js-4.11.9.tgz#26d556829458f9d1e81fc48952493d0ba3507828"
   integrity sha512-E6QoYqCKZfgatHTdHzs1RRKP7ip4vvm+EyRUeE2RF0NblwVvb0p6jSVeNTOFxPn26QXN2o6SMfNxKp6kU8zQaw==
 
+bn.js@^4.11.9:
+  version "4.12.0"
+  resolved "https://registry.yarnpkg.com/bn.js/-/bn.js-4.12.0.tgz#775b3f278efbb9718eec7361f483fb36fbbfea88"
+  integrity sha512-c98Bf3tPniI+scsdk237ku1Dc3ujXQTSgyiPUDEOe7tRkhrqridvh8klBv0HCEso1OLOYcHuCv/cS6DNxKH+ZA==
+
 brace-expansion@^1.1.7:
   version "1.1.11"
   resolved "https://registry.yarnpkg.com/brace-expansion/-/brace-expansion-1.1.11.tgz#3c7fcbf529d87226f3d2f52b966ff5271eb441dd"
@@ -1941,7 +1946,7 @@ braces@~3.0.2:
   dependencies:
     fill-range "^7.0.1"
 
-brorand@^1.0.1:
+brorand@^1.0.1, brorand@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/brorand/-/brorand-1.1.0.tgz#12c25efe40a45e3c323eb8675a0a0ce57b22371f"
   integrity sha1-EsJe/kCkXjwyPrhnWgoM5XsiNx8=
@@ -2574,7 +2579,7 @@ electron-to-chromium@^1.3.322, electron-to-chromium@^1.3.390:
   resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.403.tgz#c8bab4e2e72bf78bc28bad1cc355c061f9cc1918"
   integrity sha512-JaoxV4RzdBAZOnsF4dAlZ2ijJW72MbqO5lNfOBHUWiBQl3Rwe+mk2RCUMrRI3rSClLJ8HSNQNqcry12H+0ZjFw==
 
-elliptic@^6.0.0, elliptic@^6.5.2:
+elliptic@^6.0.0:
   version "6.5.3"
   resolved "https://registry.yarnpkg.com/elliptic/-/elliptic-6.5.3.tgz#cb59eb2efdaf73a0bd78ccd7015a62ad6e0f93d6"
   integrity sha512-IMqzv5wNQf+E6aHeIqATs0tOLeOTwj1QKbRcS3jBbYkl5oLAserA8yJTT7/VyHUYG91PRmPyeQDObKLPpeS4dw==
@@ -2586,6 +2591,19 @@ elliptic@^6.0.0, elliptic@^6.5.2:
     inherits "^2.0.1"
     minimalistic-assert "^1.0.0"
     minimalistic-crypto-utils "^1.0.0"
+
+elliptic@^6.5.4:
+  version "6.5.4"
+  resolved "https://registry.yarnpkg.com/elliptic/-/elliptic-6.5.4.tgz#da37cebd31e79a1367e941b592ed1fbebd58abbb"
+  integrity sha512-iLhC6ULemrljPZb+QutR5TQGB+pdW6KGD5RSegS+8sorOZT+rdQFbsQFJgvN3eRqNALqJer4oQ16YvJHlU8hzQ==
+  dependencies:
+    bn.js "^4.11.9"
+    brorand "^1.1.0"
+    hash.js "^1.0.0"
+    hmac-drbg "^1.0.1"
+    inherits "^2.0.4"
+    minimalistic-assert "^1.0.1"
+    minimalistic-crypto-utils "^1.0.1"
 
 emoji-regex@^8.0.0:
   version "8.0.0"
@@ -3014,7 +3032,7 @@ hash.js@^1.0.0, hash.js@^1.0.3:
     inherits "^2.0.3"
     minimalistic-assert "^1.0.1"
 
-hmac-drbg@^1.0.0:
+hmac-drbg@^1.0.0, hmac-drbg@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/hmac-drbg/-/hmac-drbg-1.0.1.tgz#d2745701025a6c775a6c545793ed502fc0c649a1"
   integrity sha1-0nRXAQJabHdabFRXk+1QL8DGSaE=
@@ -3078,7 +3096,7 @@ inflight@^1.0.4:
     once "^1.3.0"
     wrappy "1"
 
-inherits@2, inherits@^2.0.1, inherits@^2.0.3, inherits@~2.0.1, inherits@~2.0.3:
+inherits@2, inherits@^2.0.1, inherits@^2.0.3, inherits@^2.0.4, inherits@~2.0.1, inherits@~2.0.3:
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/inherits/-/inherits-2.0.4.tgz#0fa2c64f932917c3433a0ded55363aae37416b7c"
   integrity sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==
@@ -3344,13 +3362,13 @@ jwa@^1.4.1:
     ecdsa-sig-formatter "1.0.11"
     safe-buffer "^5.0.1"
 
-jwk-to-pem@^2.0.3:
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/jwk-to-pem/-/jwk-to-pem-2.0.3.tgz#83863b4a4263d06aeefd587c5d2f36b30d6c8098"
-  integrity sha512-T1MA0L3DVB2mOIZytZyNTdcAAOJscLLCi25dgzQtkHjTcuwpRW3BFnjj0eEpMORfJyZtFZ5wy++Ys6wsMolPsA==
+jwk-to-pem@^2.0.5:
+  version "2.0.5"
+  resolved "https://registry.yarnpkg.com/jwk-to-pem/-/jwk-to-pem-2.0.5.tgz#151310bcfbcf731adc5ad9f379cbc8b395742906"
+  integrity sha512-L90jwellhO8jRKYwbssU9ifaMVqajzj3fpRjDKcsDzrslU9syRbFqfkXtT4B89HYAap+xsxNcxgBSB09ig+a7A==
   dependencies:
     asn1.js "^5.3.0"
-    elliptic "^6.5.2"
+    elliptic "^6.5.4"
     safe-buffer "^5.0.1"
 
 jws@^3.2.2:
