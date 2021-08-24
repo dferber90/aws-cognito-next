@@ -1,4 +1,4 @@
-import Cookies from "js-cookie";
+import cookie from "cookie";
 
 const unauthenticatedCookies = {
   lastUser: null,
@@ -24,15 +24,23 @@ export function getCognitoCookieInfo(
 
   if (!cookieString) return unauthenticatedCookies;
 
-  const keyPrefix = `CognitoIdentityServiceProvider.${userPoolWebClientId}`;
-  const lastUser = Cookies.get(`${keyPrefix}.LastAuthUser`) || null;
+  const cookieData: { [key: string]: string } = cookie.parse(cookieString);
+  const prefix = `CognitoIdentityServiceProvider.${userPoolWebClientId}`;
+  const lastUserKey = `${prefix}.LastAuthUser`;
+  const lastUser = cookieData[lastUserKey] ? cookieData[lastUserKey] : null;
 
-  const idTokenKey = lastUser ? `${keyPrefix}.${lastUser}.idToken` : null;
-  const idToken = (idTokenKey && Cookies.get(idTokenKey)) || null;
-  const accessTokenKey = lastUser
-    ? `${keyPrefix}.${lastUser}.accessToken`
+  const idTokenKey = lastUser
+    ? `${prefix}.${encodeURIComponent(lastUser)}.idToken`
     : null;
-  const accessToken = (accessTokenKey && Cookies.get(accessTokenKey)) || null;
+  const idToken =
+    idTokenKey && cookieData[idTokenKey] ? cookieData[idTokenKey] : null;
+  const accessTokenKey = lastUser
+    ? `${prefix}.${encodeURIComponent(lastUser)}.accessToken`
+    : null;
+  const accessToken =
+    accessTokenKey && cookieData[accessTokenKey]
+      ? cookieData[accessTokenKey]
+      : null;
 
   return { lastUser, idToken, accessToken };
 }
