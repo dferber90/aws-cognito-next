@@ -6,6 +6,13 @@ const unauthenticatedCookies = {
   accessToken: null,
 };
 
+// use same algorithm as js-cookie which is used in aws-amplify/auth@4.20
+function userIdToTokenKey(key: string) {
+  return encodeURIComponent(key)
+    .replace(/%(2[346B]|5E|60|7C)/g, decodeURIComponent)
+    .replace(/[()]/g, escape);
+}
+
 // returns all auth cookies
 export function getCognitoCookieInfo(
   cookieString: string | undefined,
@@ -30,12 +37,12 @@ export function getCognitoCookieInfo(
   const lastUser = cookieData[lastUserKey] ? cookieData[lastUserKey] : null;
 
   const idTokenKey = lastUser
-    ? `${prefix}.${encodeURIComponent(lastUser)}.idToken`
+    ? `${prefix}.${userIdToTokenKey(lastUser)}.idToken`
     : null;
   const idToken =
     idTokenKey && cookieData[idTokenKey] ? cookieData[idTokenKey] : null;
   const accessTokenKey = lastUser
-    ? `${prefix}.${encodeURIComponent(lastUser)}.accessToken`
+    ? `${prefix}.${userIdToTokenKey(lastUser)}.accessToken`
     : null;
   const accessToken =
     accessTokenKey && cookieData[accessTokenKey]
