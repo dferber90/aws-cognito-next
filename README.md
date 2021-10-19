@@ -91,7 +91,7 @@ You will need different environment variable values for local development and fo
 You need to provide the following environment variables:
 
 ```bash
-IDP_DOMAIN=<doamin>.auth.<region>.amazoncognito.com
+IDP_DOMAIN=<domain>.auth.<region>.amazoncognito.com
 USER_POOL_REGION=eu-central-1
 USER_POOL_ID=eu-central-1_xxxxxx
 USER_POOL_CLIENT_ID=xxxxxxxxxxxxxxxxxxxxxxxxxx
