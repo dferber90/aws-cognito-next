@@ -1,8 +1,10 @@
-# aws-cognito-next
+# aws-cognito-next (Deprecated)
 
 Authentication helpers to enable usage of [AWS Cognito](https://aws.amazon.com/en/cognito/) in [next.js](https://nextjs.org/) applications.
 
 > **Update (2020–09–29)**: aws-amplify has added support for server-side rendering since this package was created. You can read [the announcement](https://aws.amazon.com/de/blogs/mobile/ssr-support-for-aws-amplify-javascript-libraries/) for details. You might be able to use aws-amplify directly instead of the more manual approach shown in this package.
+
+> **Update (2021-11-17)**: **This package is being deprecated** as more viable alternatives became available since I started the package. Alternatives have more lively communities and better outlook for the future. Consider using the [AWS Amplify Next.js integration](https://docs.amplify.aws/start/q/integration/next/) or the [Next Auth with its Cognito Provider](https://next-auth.js.org/providers/cognito). A heartfelt thank you to everyone who gave this early project a chance.
 
 ### Quick links
 
@@ -23,7 +25,7 @@ See [MDN](https://developer.mozilla.org/de/docs/Web/HTTP/Cookies) for more infor
 
 ## Table of contents
 
-- [aws-cognito-next](#aws-cognito-next)
+- [aws-cognito-next (Deprecated)](#aws-cognito-next-deprecated)
     - [Quick links](#quick-links)
     - [Pros](#pros)
     - [Cons](#cons)
